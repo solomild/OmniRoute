@@ -8,6 +8,7 @@ type JsonRecord = Record<string, unknown>;
 // `additionalProperties` is handled separately so `true` can be preserved.
 export const GEMINI_UNSUPPORTED_SCHEMA_KEYS = new Set([
   // Basic constraints (not supported by Gemini API)
+  "uniqueItems",
   "minLength",
   "maxLength",
   "exclusiveMinimum",
