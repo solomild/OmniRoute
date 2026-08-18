@@ -7,8 +7,6 @@
  * (do not slugify). On poll failure the last good snapshot is kept.
  */
 
-import { safeOutboundFetch } from "@/shared/network/safeOutboundFetch";
-
 export const AI_HORDE_API_BASE = "https://aihorde.net/api";
 export const AI_HORDE_ANONYMOUS_KEY = "0000000000";
 export const AI_HORDE_CLIENT_AGENT = "OmniRoute:3.8.49:https://github.com/diegosouzapw/OmniRoute";
@@ -36,14 +34,15 @@ export interface HordeImageCatalogSnapshot {
 type HordeFetchInit = RequestInit & { timeoutMs?: number };
 type HordeFetch = (input: string, init?: HordeFetchInit) => Promise<Response>;
 
-// Bounded default transport: fixed trusted host (guard "none"), abort-aware
-// timeout. Callers that inject a custom `fetchImpl` (tests, alternate
+// Bounded default transport: fixed trusted host, abort-aware timeout.
+// Callers that inject a custom `fetchImpl` (tests, alternate
 // transports) opt out of this bound deliberately.
-const defaultHordeFetch: HordeFetch = (input, init) => {
-  const { timeoutMs, ...rest } = init || {};
-  return safeOutboundFetch(input, {
-    guard: "none",
-    timeoutMs: timeoutMs ?? AI_HORDE_CATALOG_FETCH_TIMEOUT_MS,
+const defaultHordeFetch: HordeFetch = async (input, init) => {
+  const { timeoutMs, signal, ...rest } = init || {};
+  const timeoutSignal = AbortSignal.timeout(timeoutMs ?? AI_HORDE_CATALOG_FETCH_TIMEOUT_MS);
+  const combinedSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
+  return fetch(input, {
+    signal: combinedSignal,
     ...rest,
   });
 };
@@ -174,7 +173,9 @@ export class HordeImageCatalog {
     await this.refresh(options);
   }
 
-  private async refreshOnce(options: { timeoutMs?: number; signal?: AbortSignal } = {}): Promise<void> {
+  private async refreshOnce(
+    options: { timeoutMs?: number; signal?: AbortSignal } = {}
+  ): Promise<void> {
     try {
       const url = `${AI_HORDE_API_BASE}/v2/status/models?type=image`;
       const response = await this.fetchImpl(url, {
