@@ -1,4 +1,4 @@
-name: Build OmniRoute ARM64 workaround image
+name: Build OmniRoute AMD64 workaround image
 
 on:
   workflow_dispatch:
@@ -19,8 +19,8 @@ permissions:
 
 jobs:
   build:
-    name: Build and smoke test linux/arm64
-    runs-on: ubuntu-24.04-arm
+    name: Build and smoke test linux/amd64
+    runs-on: ubuntu-24.04
     env:
       IMAGE_NAME: solomild/omniroute
       IMAGE_TAG: ${{ inputs.image_tag }}
@@ -42,12 +42,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build ARM64 image without cache
+      - name: Build AMD64 image without cache
         uses: docker/build-push-action@v6
         with:
           context: .
           target: runner-base
-          platforms: linux/arm64
+          platforms: linux/amd64
           load: true
           tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           no-cache: true

@@ -7,6 +7,8 @@
  * (do not slugify). On poll failure the last good snapshot is kept.
  */
 
+import { registerDynamicImageModelSource } from "../config/dynamicImageModelSources.ts";
+
 export const AI_HORDE_API_BASE = "https://aihorde.net/api";
 export const AI_HORDE_ANONYMOUS_KEY = "0000000000";
 export const AI_HORDE_CLIENT_AGENT = "OmniRoute:3.8.49:https://github.com/diegosouzapw/OmniRoute";
@@ -219,3 +221,15 @@ export function getCachedAiHordeImageCatalogEntries(): Array<{
     description: `${model.count} worker${model.count === 1 ? "" : "s"} online`,
   }));
 }
+
+// Self-registration (#10692): the IMAGE_PROVIDERS entry for `aihorde` reads its models
+// through `dynamicImageModelSources` instead of importing this server-only module, so the
+// browser graph stays free of the SQLite driver. Importing this file — which every server
+// path needing live models already does — restores the live list.
+registerDynamicImageModelSource("aihorde", () =>
+  getCachedAiHordeImageCatalogEntries().map((entry) => ({
+    id: entry.id.startsWith("aihorde/") ? entry.id.slice("aihorde/".length) : entry.id,
+    name: entry.name,
+    inputModalities: entry.inputModalities,
+  }))
+);
