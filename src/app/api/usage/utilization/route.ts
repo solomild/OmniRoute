@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAggregatedSnapshots } from "@/lib/db/quotaSnapshots";
-import { getConnection } from "@/lib/db/connections";
+import { getCachedProviderConnectionById } from "@/lib/db/readCache";
 import type {
   ProviderUtilizationResponse,
   UtilizationTimeRange,
@@ -67,7 +67,11 @@ export async function GET(request: Request) {
       );
       connectionMeta = {};
       for (const cid of uniqueConnectionIds) {
-        const conn = getConnection(cid);
+        const conn = (await getCachedProviderConnectionById(cid)) as {
+          email?: string | null;
+          name?: string | null;
+          displayName?: string | null;
+        } | null;
         connectionMeta[cid] = {
           email: conn?.email ?? null,
           name: conn?.name ?? null,
@@ -90,3 +94,4 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Failed to fetch utilization data" }, { status: 500 });
   }
 }
+
