@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAggregatedSnapshots } from "@/lib/db/quotaSnapshots";
-import { getCachedProviderConnectionById } from "@/lib/db/readCache";
+import { getProviderConnectionById } from "@/lib/db/providers";
 import type {
   ProviderUtilizationResponse,
   UtilizationTimeRange,
@@ -9,6 +9,10 @@ import type {
 import { BUCKET_SIZES } from "@/shared/types/utilization";
 
 const VALID_RANGES: UtilizationTimeRange[] = ["1h", "24h", "7d", "30d"];
+
+function asNullableString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
 
 function getRangeStartIso(range: UtilizationTimeRange): string {
   const end = new Date();
@@ -67,15 +71,11 @@ export async function GET(request: Request) {
       );
       connectionMeta = {};
       for (const cid of uniqueConnectionIds) {
-        const conn = (await getCachedProviderConnectionById(cid)) as {
-          email?: string | null;
-          name?: string | null;
-          displayName?: string | null;
-        } | null;
+        const conn = await getProviderConnectionById(cid);
         connectionMeta[cid] = {
-          email: conn?.email ?? null,
-          name: conn?.name ?? null,
-          displayName: conn?.displayName ?? null,
+          email: asNullableString(conn?.email),
+          name: asNullableString(conn?.name),
+          displayName: asNullableString(conn?.displayName),
         };
       }
     }

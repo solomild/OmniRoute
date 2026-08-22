@@ -83,7 +83,7 @@ export const APIKEY_PROVIDERS_GATEWAYS = {
     textIcon: "CC",
     website: "https://commandcode.ai/",
     authHint:
-      "Use a Command Code API key. Requests are sent to Command Code's /alpha/generate endpoint.",
+      "Use a Command Code API key. Requests are sent to Command Code's /provider/v1/chat/completions endpoint.",
     apiHint: "Create or copy an API key from Command Code, then paste it here as a Bearer token.",
   },
   openrouter: {
@@ -638,20 +638,6 @@ export const APIKEY_PROVIDERS_GATEWAYS = {
     notice: {
       text: "Dahl auto-generates tokens via https://inference.dahl.global/tokens. No signup needed. Rate limits apply. You can also add your own API key.",
     },
-  },
-  uncloseai: {
-    id: "uncloseai",
-    alias: "unc",
-    name: "UncloseAI",
-    icon: "auto_awesome",
-    color: "#8B5CF6",
-    textIcon: "UN",
-    website: "https://uncloseai.com",
-    hasFree: true,
-    freeNote: "Free forever — no signup, no credit card. OpenAI-compatible endpoints.",
-    passthroughModels: true,
-    authHint:
-      "No auth required. API accepts any non-empty string as key for identification. If older built-in models return 404, use Available Models → Import from /models or Auto-Sync; verified live model: solidrust/Hermes-3-Llama-3.1-8B-AWQ.",
   },
   hackclub: {
     id: "hackclub",
